@@ -1,4 +1,6 @@
-﻿using System.Net.Http.Headers;
+﻿using BooksClient.ModelsDto;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 
 HttpClient httpClient = new()
 {
@@ -10,3 +12,17 @@ httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(
 
 // TODO: Write some client methods according to API endpoint and print its response to the console
 // ...
+
+HttpResponseMessage response = await httpClient.GetAsync("api/Books");
+response.EnsureSuccessStatusCode();
+
+if (response.IsSuccessStatusCode)
+{
+    var content = await response.Content.ReadFromJsonAsync<IEnumerable<BooksDto>>();
+    foreach (var item in content)
+    {
+        Console.WriteLine(item);
+    }
+}
+
+Console.ReadLine();
