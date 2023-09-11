@@ -16,7 +16,7 @@
                    $"Author: {Author}\n" +
                    $"Description: {Description}\n" +
                    $"Genre: {Genre}\n" +
-                   $"Publish Date: {PublishDate}";
+                   $"Publish Date: {PublishDate}\n";
         }
     }
 
