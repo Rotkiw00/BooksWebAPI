@@ -17,8 +17,6 @@ namespace BooksClient
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        //TODO: Complete below method and the rest of http client method
-
         public async Task RunClientAsync()
         {
             PrintAvaiableOptions();
@@ -36,8 +34,10 @@ namespace BooksClient
                     await UpdateBookAsync();
                     break;
                 case HttpMethodType.DELETE:
+                    await DeleteBookAsync();
                     break;
                 default:
+                    await Console.Out.WriteLineAsync("Wrong option selected. Try again");
                     break;
             }
         }
@@ -52,6 +52,7 @@ namespace BooksClient
             }
         }
 
+        #region Client GET        
         private async Task GetAllBooksAsync()
         {
             HttpResponseMessage getResponse = await _httpClient.GetAsync("api/Books");
@@ -72,7 +73,9 @@ namespace BooksClient
                 await Console.Out.WriteLineAsync(getResponse.StatusCode.ToString());
 
         }
+        #endregion
 
+        #region Client POST        
         private async Task PostBookAsync()
         {
             var book = CreateBook();
@@ -103,7 +106,9 @@ namespace BooksClient
             }
             return book;
         }
+        #endregion
 
+        #region Client PUT        
         private async Task UpdateBookAsync()
         {
             Console.WriteLine("Enter ID of Book that you want to edit:");
@@ -114,7 +119,7 @@ namespace BooksClient
 
             HttpResponseMessage putResponse = await _httpClient.PutAsJsonAsync($"api/Books/{id}", bookToEdit);
             putResponse.EnsureSuccessStatusCode();
-            if(putResponse.IsSuccessStatusCode) { await Console.Out.WriteLineAsync("Book successfully updated."); }
+            if(putResponse.IsSuccessStatusCode) { Console.Clear(); await Console.Out.WriteLineAsync("Book successfully updated."); }
         }
 
         private async Task<BooksDto> GetBookToUpdate(int id)
@@ -135,5 +140,18 @@ namespace BooksClient
             Console.WriteLine("Genre:");
             bookToEdit.Genre = Console.ReadLine();
         }
+        #endregion
+
+        #region Client DELETE
+        private async Task DeleteBookAsync()
+        {
+            Console.WriteLine("Enter ID of Book that you want to delete:");
+            int id = int.Parse(Console.ReadLine());
+
+            HttpResponseMessage deleteResponse = await _httpClient.DeleteAsync($"api/Books/{id}");
+            deleteResponse.EnsureSuccessStatusCode();
+            if(deleteResponse.IsSuccessStatusCode) { Console.Clear(); await Console.Out.WriteLineAsync("Book succesfully deleted."); }
+        }
+        #endregion
     }
 }
