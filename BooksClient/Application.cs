@@ -2,22 +2,16 @@
 using BooksClient.ModelsDto;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace BooksClient
 {
     public class Application
     {
         private readonly HttpClient _httpClient;
-        private HttpMethodType _methodType;
 
         public Application()
         {
-            _httpClient = new()
-            {
-                BaseAddress = new Uri("https://localhost:7213")
-            };
+            _httpClient = new() { BaseAddress = new Uri("https://localhost:7213") };
 
             _httpClient.DefaultRequestHeaders.Accept.Clear();
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -36,9 +30,10 @@ namespace BooksClient
                     await GetAllBooksAsync();
                     break;
                 case HttpMethodType.POST:
-                    await CreateBook();
+                    await PostBookAsync();
                     break;
                 case HttpMethodType.PUT:
+                    await UpdateBookAsync();
                     break;
                 case HttpMethodType.DELETE:
                     break;
@@ -59,62 +54,86 @@ namespace BooksClient
 
         private async Task GetAllBooksAsync()
         {
-            HttpResponseMessage response = await _httpClient.GetAsync("api/Books");
-            response.EnsureSuccessStatusCode();
+            HttpResponseMessage getResponse = await _httpClient.GetAsync("api/Books");
+            getResponse.EnsureSuccessStatusCode();
 
-            if (response.IsSuccessStatusCode)
+            if (getResponse.IsSuccessStatusCode)
             {
-                var content = await response.Content.ReadFromJsonAsync<IEnumerable<BooksDto>>() ?? Enumerable.Empty<BooksDto>();
+                var content = await getResponse.Content.ReadFromJsonAsync<IEnumerable<BooksDto>>() ?? Enumerable.Empty<BooksDto>();
 
                 if (!content.Any())
-                {
                     await Console.Out.WriteLineAsync("There is no books in database..");
-                }
+
                 else
-                {
                     foreach (var item in content)
-                    {
                         await Console.Out.WriteLineAsync(item.ToString());
-                    }
-                }
             }
             else
-            {
-                await Console.Out.WriteLineAsync(response.StatusCode.ToString());
-            }
+                await Console.Out.WriteLineAsync(getResponse.StatusCode.ToString());
+
         }
 
-        private async Task CreateBook()
+        private async Task PostBookAsync()
         {
-            // TODO: Fix it
-            var book = HandleBookCreation();
-            var json = JsonSerializer.Serialize(book);
+            var book = CreateBook();
 
-            HttpResponseMessage response = await _httpClient.PostAsJsonAsync("api/Books", json);
-            response.EnsureSuccessStatusCode();
-            if (response.IsSuccessStatusCode) { await Console.Out.WriteLineAsync("Successfully added new book."); }
-            else { await Console.Out.WriteLineAsync(response.StatusCode.ToString()); }
+            HttpResponseMessage postResponse = await _httpClient.PostAsJsonAsync("api/Books", book);
+            postResponse.EnsureSuccessStatusCode();
+            if (postResponse.IsSuccessStatusCode) { Console.Clear(); await Console.Out.WriteLineAsync("Successfully added new book."); }
+            else await Console.Out.WriteLineAsync(postResponse.StatusCode.ToString());
         }
 
-        private static BooksDto HandleBookCreation()
+        private static BooksDto CreateBook()
         {
             Console.WriteLine("New book adding...");
             BooksDto book = new();
 
             foreach (var prop in book.GetType().GetProperties())
             {
-                if (prop.Name is "Id") { continue; }
+                if (prop.Name is "Id") continue;
 
                 if (prop.Name is "PublishDate")
                 {
-                    prop.SetValue(book, DateTime.Now);
+                    prop.SetValue(book, DateTime.Now.ToUniversalTime());
                     continue;
                 }
 
                 Console.WriteLine($"{prop.Name}: ");
-                prop.SetValue(book, Console.ReadLine());                
+                prop.SetValue(book, Console.ReadLine());
             }
             return book;
-        }        
+        }
+
+        private async Task UpdateBookAsync()
+        {
+            Console.WriteLine("Enter ID of Book that you want to edit:");
+            int id = int.Parse(Console.ReadLine());
+
+            var bookToEdit = await GetBookToUpdate(id);
+            EditBook(bookToEdit);
+
+            HttpResponseMessage putResponse = await _httpClient.PutAsJsonAsync($"api/Books/{id}", bookToEdit);
+            putResponse.EnsureSuccessStatusCode();
+            if(putResponse.IsSuccessStatusCode) { await Console.Out.WriteLineAsync("Book successfully updated."); }
+        }
+
+        private async Task<BooksDto> GetBookToUpdate(int id)
+        {
+            HttpResponseMessage getByIdResponse = await _httpClient.GetAsync($"api/Books/{id}");
+            var book = await getByIdResponse.Content.ReadAsAsync<BooksDto>();
+            return book;
+        }
+
+        private static void EditBook(BooksDto bookToEdit)
+        {
+            Console.WriteLine("Title:");
+            bookToEdit.Title = Console.ReadLine();
+            Console.WriteLine("Author:");
+            bookToEdit.Author = Console.ReadLine();
+            Console.WriteLine("Description");
+            bookToEdit.Description = Console.ReadLine();
+            Console.WriteLine("Genre:");
+            bookToEdit.Genre = Console.ReadLine();
+        }
     }
 }

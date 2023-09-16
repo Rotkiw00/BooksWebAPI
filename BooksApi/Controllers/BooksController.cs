@@ -37,13 +37,13 @@ namespace BooksApi.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> ModifyBook(int id,  Book book)
+        public async Task<IActionResult> ModifyBook(int id, Book book)
         {
             if (id != book.Id) BadRequest();
 
             _context.Entry(book).State = EntityState.Modified;
             await _context.SaveChangesAsync();
-            
+
             return NoContent();
         }
 
