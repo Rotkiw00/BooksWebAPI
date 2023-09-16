@@ -12,7 +12,7 @@ The Books API is a web service built using C# and ASP.NET Core. It provides a se
 
 The API project runs on `https://localhost`. It has also configured Swagger which ensure a RESTful API documentation with all of available endpoint and allow testing them. 
 
-![swagger.png](Images_README\swagger.png)
+![swaggerUI.png](Images_README\swaggerUI.png)
 
 ### GET response results in Swagger:
 ```json
