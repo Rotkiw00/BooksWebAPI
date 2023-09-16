@@ -15,6 +15,7 @@ The API project runs on `https://localhost`. It has also configured Swagger whic
 ### GET response results in Swagger:
 ```json
 [
+  ...
   {
     "id": 2,
     "title": "Lord of The Rings",
@@ -31,6 +32,7 @@ The API project runs on `https://localhost`. It has also configured Swagger whic
     "genre": "Bajka",
     "publishDate": "2023-09-13T20:28:01.727Z"
   },
+  ...
 ]
 ```
 
